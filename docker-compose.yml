@@ -1,0 +1,53 @@
+version: "3.7"
+services:
+
+  ## PHP-FPM Container ############
+  php-fpm:
+    build:
+      context: ./docker/php-fpm
+      dockerfile: Dockerfile
+    image: php-fpm
+    container_name: laravel-php-fpm
+    restart: unless-stopped
+    working_dir: /var/www/html
+    volumes:
+      - ./:/var/www/html
+    networks:
+      - laravel-estudo-network
+
+  ## NGINX Container #############
+  nginx:
+    image: nginx:1.19-alpine
+    container_name: laravel-nginx
+    restart: unless-stopped
+    ports:
+      - 80:80
+    volumes:
+      - ./:/var/www/html
+      - ./docker/nginx:/etc/nginx/conf.d
+    networks:
+      - laravel-estudo-network
+
+  # MySQL Container
+  mysql:
+    image: mysql:8.0
+    container_name: laravel-mysql
+    volumes:
+      - laravel-estudo-db:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=laravel
+      - MYSQL_DATABASE=laravel
+      - MYSQL_USER=laravel
+      - MYSQL_PASSWORD=laravel
+    networks:
+      - laravel-estudo-network
+
+networks:
+  laravel-estudo-network:
+    driver: bridge
+
+volumes:
+  laravel-estudo-db:
+    driver: local
